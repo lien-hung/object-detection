@@ -261,6 +261,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  tensorflow_lite_flutter:
+    dependency: "direct main"
+    description:
+      name: tensorflow_lite_flutter
+      sha256: "49f8638852f458fd9d77f49bb5432f67d7c925e4d1b1189671897a6bcb402b66"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0"
   term_glyph:
     dependency: transitive
     description:

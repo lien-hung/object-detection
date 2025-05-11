@@ -38,6 +38,7 @@ dependencies:
   # Add other dependencies here
   easy_splash_screen: ^1.0.4
   camera: ^0.11.1
+  tensorflow_lite_flutter: ^3.0.0
 
 dev_dependencies:
   flutter_test:
