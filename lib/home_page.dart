@@ -1,7 +1,6 @@
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:object_detection_app/main.dart';
-import 'package:tensorflow_lite_flutter/tensorflow_lite_flutter.dart';
+import 'package:ultralytics_yolo/yolo_task.dart';
+import 'package:ultralytics_yolo/yolo_view.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -11,82 +10,26 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  bool isWorking = false;
+  YoloViewController? controller;
   String result = "";
-  late CameraController cameraController;
-  CameraImage? cameraImage;
 
-  loadModel() async {
-    await Tflite.loadModel(
-      model: "assets/mobilenet_v1_1.0_224.tflite",
-      labels: "assets/mobilenet_v1_1.0_224.txt",
-    );
-  }
-
-  initCamera() {
-    cameraController = CameraController(cameras[0], ResolutionPreset.medium);
-    cameraController.initialize().then((value) {
-      if (!mounted) {
-        return;
-      }
-
-      setState(() {
-        cameraController.startImageStream((imageFromStream) {
-          if (!isWorking) {
-            isWorking = true;
-            cameraImage = imageFromStream;
-            runModelOnStreamFrames();
-          }
-        });
-      });
-    });
-  }
-
-  runModelOnStreamFrames() async {
-    if (cameraImage != null) {
-      var recognitions = await Tflite.runModelOnFrame(
-        bytesList:
-            cameraImage!.planes.map((plane) {
-              return plane.bytes;
-            }).toList(),
-        imageHeight: cameraImage!.height,
-        imageWidth: cameraImage!.width,
-        imageMean: 127.5,
-        imageStd: 127.5,
-        rotation: 90,
-        numResults: 2,
-        threshold: 0.1,
-        asynch: true,
-      );
-
-      result = "";
-
-      recognitions?.forEach((response) {
-        result +=
-            '${response["label"]} - ${(response["confidence"] * 100).toStringAsFixed(2)}%\n\n';
-      });
-
-      setState(() {
-        result;
-      });
-
-      isWorking = false;
+  initController() {
+    try {
+      controller = YoloViewController();
+      controller?.setThresholds(confidenceThreshold: 0.5, iouThreshold: 0.45);
+    } catch (e) {
+      debugPrint('Error: $e');
     }
   }
 
   @override
   void initState() {
     super.initState();
-
-    loadModel();
   }
 
   @override
   void dispose() async {
     super.dispose();
-
-    await Tflite.close();
-    cameraController.dispose();
   }
 
   @override
@@ -104,35 +47,33 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     Center(
                       child: SizedBox(
-                        height: 270,
-                        width: 360,
+                        height: 320,
+                        width: 320,
                         child: Image.asset("assets/camera.jpg"),
                       ),
                     ),
                     Center(
                       child: TextButton(
                         onPressed: () {
-                          initCamera();
+                          initController();
                         },
                         child: Container(
                           margin: EdgeInsets.only(top: 35),
-                          height: 270,
-                          width: 360,
+                          height: 320,
+                          width: 320,
                           child:
-                              cameraImage == null
-                                  ? SizedBox(
-                                    height: 270,
-                                    width: 360,
-                                    child: Icon(
-                                      Icons.photo_camera_front,
-                                      color: Colors.blueAccent,
-                                      size: 40,
-                                    ),
-                                  )
-                                  : AspectRatio(
-                                    aspectRatio:
-                                        cameraController.value.aspectRatio,
-                                    child: CameraPreview(cameraController),
+                              controller == null
+                                  ? Container()
+                                  : YoloView(
+                                    controller: controller,
+                                    task: YOLOTask.detect,
+                                    modelPath: 'assets/models/yolo11s.pt',
+                                    onResult: (results) {
+                                      for (var res in results) {
+                                        result +=
+                                            '${res.className} - ${res.confidence}\n\n';
+                                      }
+                                    },
                                   ),
                         ),
                       ),

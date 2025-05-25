@@ -38,7 +38,7 @@ dependencies:
   # Add other dependencies here
   easy_splash_screen: ^1.0.4
   camera: ^0.11.1
-  tensorflow_lite_flutter: ^3.0.0
+  ultralytics_yolo: ^0.1.4
 
 dev_dependencies:
   flutter_test:
@@ -68,6 +68,7 @@ flutter:
   #   - images/a_dot_ham.jpeg
   assets:
     - assets/
+    - assets/models/yolo11s.pt
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
